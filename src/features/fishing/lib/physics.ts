@@ -1,8 +1,8 @@
-import type { Session, GameDocument, FishSpecies } from "../../../shared/types";
+import type { GameDocument, Session, FishSpecies } from "../../../shared/types";
 import { clamp } from "../../../shared/random";
 export function fightStep(
   s: Session,
-  doc: GameDocument,
+  doc: Pick<GameDocument, "power" | "drag">,
   fish: FishSpecies,
   dt: number,
 ): Session {

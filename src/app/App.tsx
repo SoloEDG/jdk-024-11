@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Fish,
   BookOpen,
@@ -9,6 +9,7 @@ import {
   ArrowUpRight,
   X,
   Compass,
+  GraduationCap,
 } from "lucide-react";
 import { isBusy } from "../shared/initial";
 import { WaterPanel, WaterConditions, water } from "../features/waters";
@@ -16,9 +17,17 @@ import { BaitPanel, RigPanel } from "../features/tackle";
 import { LakeScene, FishingPanel } from "../features/fishing";
 import { CollectionPanel } from "../features/collection";
 import { ChallengePanel, TripStats } from "../features/challenges";
+import { TrialCenter, useTrials } from "../features/trials";
 import { useGame } from "./useGame";
+
 export function App() {
-  const { state, send, saved } = useGame();
+  const { state, send, saved, area, setArea } = useGame();
+  const trials = useTrials();
+  useEffect(() => {
+    if (!trials.notice) return;
+    const timer = window.setTimeout(() => trials.setNotice(""), 4200);
+    return () => window.clearTimeout(timer);
+  }, [trials.notice]);
   const { doc, session } = state;
   const [help, setHelp] = useState(false);
   const busy = isBusy(session);
@@ -38,15 +47,27 @@ export function App() {
           </span>
         </a>
         <nav aria-label="主导航">
-          <a className="nav-active" href="#fishing">
+          <button
+            className={"nav-link " + (area === "fishing" ? "nav-active" : "")}
+            aria-current={area === "fishing" ? "page" : undefined}
+            onClick={() => setArea("fishing")}
+          >
             <Compass size={16} />
             去钓鱼
-          </a>
-          <a href="#collection">
+          </button>
+          <button
+            className={"nav-link " + (area === "trials" ? "nav-active" : "")}
+            aria-current={area === "trials" ? "page" : undefined}
+            onClick={() => setArea("trials")}
+          >
+            <GraduationCap size={16} />
+            教学试炼
+          </button>
+          <a href="#collection" onClick={() => setArea("fishing")}>
             <BookOpen size={16} />
             鱼类图鉴
           </a>
-          <a href="#challenges">
+          <a href="#challenges" onClick={() => setArea("fishing")}>
             <Flag size={16} />
             钓手挑战
           </a>
@@ -69,11 +90,27 @@ export function App() {
       <main>
         <div className="page-heading">
           <div>
-            <span className="eyebrow">A LITTLE TIME BY THE WATER</span>
+            <span className="eyebrow">
+              {area === "trials"
+                ? "LEARN THE WATER, ONE STEP AT A TIME"
+                : "A LITTLE TIME BY THE WATER"}
+            </span>
             <h1>
-              今天，也去钓鱼吧<span>。</span>
+              {area === "trials" ? (
+                <>
+                  一步一步，学会等待<span>。</span>
+                </>
+              ) : (
+                <>
+                  今天，也去钓鱼吧<span>。</span>
+                </>
+              )}
             </h1>
-            <p>不赶时间，只等一尾心动的鱼。</p>
+            <p>
+              {area === "trials"
+                ? "老师编排步骤，新手先试玩，再发布。"
+                : "不赶时间，只等一尾心动的鱼。"}
+            </p>
           </div>
           <div className="weather">
             <Sun size={32} strokeWidth={1.2} />
@@ -83,6 +120,18 @@ export function App() {
             </div>
           </div>
         </div>
+        {area === "trials" ? (
+          <div id="trials" className="trial-area">
+            <TrialCenter
+              library={trials.library}
+              mode={trials.mode}
+              setMode={trials.setMode}
+              onLibrary={trials.update}
+              onAttempt={trials.advanceAttempt}
+              onContinue={trials.continueCapture}
+            />
+          </div>
+        ) : (
         <div className="workspace">
           <aside className="left-column">
             <WaterPanel doc={doc} busy={busy} send={send} />
@@ -140,6 +189,7 @@ export function App() {
             <TripStats doc={doc} />
           </aside>
         </div>
+        )}
         <footer className="page-footer">
           <span>
             STILLWATER FIELD NOTES <b>·</b> EST. 2026
@@ -150,9 +200,13 @@ export function App() {
           </span>
         </footer>
       </main>
-      {state.notice && (
-        <div className="notice" role="status" key={state.notice}>
-          {state.notice}
+      {(state.notice || trials.notice) && (
+        <div
+          className="notice"
+          role="status"
+          key={state.notice || trials.notice}
+        >
+          {state.notice || trials.notice}
         </div>
       )}
       {help && (

@@ -2,6 +2,7 @@ import { useEffect, useReducer, useRef, useState } from "react";
 import { idleSession } from "../shared/initial";
 import { gameReducer } from "./gameReducer";
 import { loadGame, saveGame } from "./storage";
+export type GameArea = "fishing" | "trials";
 export function useGame() {
   const loaded = useRef<ReturnType<typeof loadGame> | null>(null);
   if (!loaded.current) loaded.current = loadGame();
@@ -11,6 +12,7 @@ export function useGame() {
   }));
   const recovery = useRef(loaded.current.recovery === true);
   const [saved, setSaved] = useState(!recovery.current);
+  const [area, setArea] = useState<GameArea>("fishing");
   useEffect(() => {
     if (recovery.current) return;
     setSaved(saveGame(state.doc));
@@ -40,5 +42,5 @@ export function useGame() {
       document.removeEventListener("visibilitychange", release);
     };
   }, []);
-  return { state, send, saved };
+  return { state, send, saved, area, setArea };
 }

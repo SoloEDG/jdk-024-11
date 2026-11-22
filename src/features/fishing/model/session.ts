@@ -2,10 +2,15 @@ import type { Session, GameDocument } from "../../../shared/types";
 import { species } from "../../../shared/catalog";
 import { clamp } from "../../../shared/random";
 import { fightStep } from "../lib/physics";
+export interface TickOptions {
+  /** 咬钩后允许提竿的窗口，正式玩法为 4 秒。 */
+  biteWindow?: number;
+}
 export function tickSession(
   s: Session,
   doc: GameDocument,
   dt: number,
+  options: TickOptions = {},
 ): Session {
   if (s.phase === "charging")
     return {
@@ -25,7 +30,7 @@ export function tickSession(
   }
   if (s.phase === "bite") {
     const clock = s.clock + dt;
-    return clock - s.biteAt > 4
+    return clock - s.biteAt > (options.biteWindow ?? 4)
       ? {
           ...s,
           clock,

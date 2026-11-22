@@ -1,6 +1,7 @@
 export type SpotId = "reed" | "brook" | "deep";
 export type BaitId = "worm" | "corn" | "fly";
 export type FishId = "crucian" | "perch" | "carp" | "trout" | "bass" | "pike";
+export type BaitStock = Record<BaitId, number>;
 export type Phase =
   "ready" | "charging" | "waiting" | "bite" | "fighting" | "landed" | "escaped";
 export interface FishSpecies {
@@ -38,7 +39,7 @@ export interface GameDocument {
   power: number;
   drag: number;
   seed: number;
-  stock: Record<BaitId, number>;
+  stock: BaitStock;
   bag: Catch[];
   journal: Partial<Record<FishId, JournalEntry>>;
   stats: { casts: number; catches: number; escapes: number; released: number };
